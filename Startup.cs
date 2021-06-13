@@ -1,15 +1,12 @@
+using CompanyEmployee.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
+using NLog;
 
 namespace CompanyEmployee
 {
@@ -17,6 +14,7 @@ namespace CompanyEmployee
     {
         public Startup(IConfiguration configuration)
         {
+            LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
             Configuration = configuration;
         }
 
@@ -27,6 +25,12 @@ namespace CompanyEmployee
         {
 
             services.AddControllers();
+
+            services.ConfigureIisIntegration();
+
+            services.ConfigureCors();
+
+            services.AddLoggingServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,8 +40,18 @@ namespace CompanyEmployee
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
+
+            app.UseCors("defaultPolicy");
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.All });
 
             app.UseRouting();
 
