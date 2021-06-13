@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Repository;
 
 namespace CompanyEmployee.Extensions
 {
@@ -41,6 +42,11 @@ namespace CompanyEmployee.Extensions
                 opt.UseSqlServer(configuration.GetConnectionString("sqlConnection"),
                     b => b.MigrationsAssembly("CompanyEmployee"));
             });
+        }
+
+        public static void ConfigureRepositoryManager(this IServiceCollection services)
+        {
+            services.AddScoped<IRepositoryManager, RepositoryManager>();
         }
     }
 }
