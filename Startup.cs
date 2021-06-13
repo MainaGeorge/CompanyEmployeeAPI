@@ -31,6 +31,8 @@ namespace CompanyEmployee
             services.ConfigureCors();
 
             services.AddLoggingServices();
+
+            services.AddSqlConnection(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
