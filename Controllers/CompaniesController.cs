@@ -2,7 +2,6 @@
 using Contracts;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 
 namespace CompanyEmployee.Controllers
@@ -26,19 +25,13 @@ namespace CompanyEmployee.Controllers
         [HttpGet]
         public IActionResult GetCompanies()
         {
-            try
-            {
-                var companies = _repositoryManager.CompanyRepository.GetAllCompanies(false);
-                var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
 
-                return Ok(companiesDto);
-            }
-            catch (Exception ex)
-            {
-                _loggerManager.LogError($"something went wrong in {nameof(GetCompanies)} action {ex}");
-                return StatusCode(500, "server error");
+            var companies = _repositoryManager.CompanyRepository.GetAllCompanies(false);
+            var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
 
-            }
+
+            return Ok(companiesDto);
+
         }
     }
 }
