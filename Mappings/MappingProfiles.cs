@@ -13,6 +13,8 @@ namespace CompanyEmployee.Mappings
                 {
                     opt.MapFrom(c => $"{c.Address} {c.Country}");
                 });
+
+            CreateMap<Employee, EmployeeDto>();
         }
     }
 }
