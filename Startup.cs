@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NLog;
 using System.IO;
-using Microsoft.Extensions.Hosting;
 
 namespace CompanyEmployee
 {
@@ -25,7 +25,13 @@ namespace CompanyEmployee
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers(conf =>
+                {
+                    conf.RespectBrowserAcceptHeader = true;
+                    conf.ReturnHttpNotAcceptable = true;
+                })
+                .AddXmlDataContractSerializerFormatters()
+                .AddCustomCsvFormatter();
 
             services.ConfigureIisIntegration();
 
