@@ -5,6 +5,8 @@ using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using CompanyEmployee.ModelBinders;
 
 namespace CompanyEmployee.Controllers
 {
@@ -44,8 +46,32 @@ namespace CompanyEmployee.Controllers
 
         }
 
+        [HttpGet("collection/({ids})", Name = "CompanyCollection")]
+        public IActionResult GetCompaniesByIds([ModelBinder(BinderType=typeof(IdsModelBinder))]IEnumerable<Guid> ids)
+        {
+            var idArray = ids as Guid[] ?? ids.ToArray();
+            if (idArray.Length < 1)
+            {
+                _loggerManager.LogError("The parameter ids is null or empty");
+                return BadRequest("The parameter ids is null or empty");
+            }
+
+            var companies = _repositoryManager
+                .CompanyRepository.GetCompaniesFromIds(idArray, false);
+
+            if (companies.Count() != idArray.Length)
+            {
+                _loggerManager.LogError("Some ids are not valid");
+                return NotFound();
+            }
+
+            var companiesToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companies);
+
+            return Ok(companiesToReturn);
+        }
+
         [HttpPost]
-        public IActionResult CreateCompany([FromBody]CompanyForCreationDto companyForCreationDto)
+        public IActionResult CreateCompany([FromBody] CompanyForCreationDto companyForCreationDto)
         {
             if (companyForCreationDto == null)
             {
@@ -61,5 +87,26 @@ namespace CompanyEmployee.Controllers
 
             return CreatedAtRoute("CompanyById", new { companyId = companyEntity.Id }, companyToReturn);
         }
+
+        [HttpPost("collection")]
+        public IActionResult CreateCompanyCollection([FromBody]IEnumerable<CompanyForCreationDto> companies)
+        {
+            if (!companies.Any())
+            {
+                _loggerManager.LogError("The collection of companies is null or empty");
+                return BadRequest("The collection of companies is null or empty");
+            }
+
+            var companyEntities = _mapper.Map<IEnumerable<Company>>(companies);
+            foreach (var company in companyEntities)
+                _repositoryManager.CompanyRepository.CreateCompany(company);
+            _repositoryManager.SaveChanges();
+            
+            var companiesToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companyEntities);
+            var ids = string.Join(",", companiesToReturn.Select(c => c.Id));
+
+            return CreatedAtRoute("CompanyCollection", new {ids}, companiesToReturn);
+        }
+
     }
 }
