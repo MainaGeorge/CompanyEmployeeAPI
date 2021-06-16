@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CompanyEmployee.ModelBinders;
 using Contracts;
 using Entities.DTOs;
 using Entities.Models;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CompanyEmployee.ModelBinders;
 
 namespace CompanyEmployee.Controllers
 {
@@ -47,7 +47,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpGet("collection/({ids})", Name = "CompanyCollection")]
-        public IActionResult GetCompaniesByIds([ModelBinder(BinderType=typeof(IdsModelBinder))]IEnumerable<Guid> ids)
+        public IActionResult GetCompaniesByIds([ModelBinder(BinderType = typeof(IdsModelBinder))] IEnumerable<Guid> ids)
         {
             var idArray = ids as Guid[] ?? ids.ToArray();
             if (idArray.Length < 1)
@@ -89,7 +89,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPost("collection")]
-        public IActionResult CreateCompanyCollection([FromBody]IEnumerable<CompanyForCreationDto> companies)
+        public IActionResult CreateCompanyCollection([FromBody] IEnumerable<CompanyForCreationDto> companies)
         {
             if (!companies.Any())
             {
@@ -101,11 +101,28 @@ namespace CompanyEmployee.Controllers
             foreach (var company in companyEntities)
                 _repositoryManager.CompanyRepository.CreateCompany(company);
             _repositoryManager.SaveChanges();
-            
+
             var companiesToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companyEntities);
             var ids = string.Join(",", companiesToReturn.Select(c => c.Id));
 
-            return CreatedAtRoute("CompanyCollection", new {ids}, companiesToReturn);
+            return CreatedAtRoute("CompanyCollection", new { ids }, companiesToReturn);
+        }
+
+        [HttpDelete("{companyId:guid}")]
+        public IActionResult DeleteCompany(Guid companyId)
+        {
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, false);
+
+            if (company == null)
+            {
+                _loggerManager.LogError($"company to be deleted with id {companyId} does not exist");
+                return NotFound($"company to be deleted with id {companyId} does not exist");
+            }
+
+            _repositoryManager.CompanyRepository.DeleteCompany(company);
+            _repositoryManager.SaveChanges();
+
+            return NoContent();
         }
 
     }
