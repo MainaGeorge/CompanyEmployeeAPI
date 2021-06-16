@@ -16,7 +16,7 @@ namespace CompanyEmployee.Mappings
 
             CreateMap<Employee, EmployeeDto>();
             CreateMap<CompanyForCreationDto, Company>();
-            CreateMap<EmployeeForCreationDto, Employee>();
+            CreateMap<EmployeeForCreationDto, Employee>().ReverseMap();
         }
     }
 }

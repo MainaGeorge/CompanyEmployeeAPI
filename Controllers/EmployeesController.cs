@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using CompanyEmployee.ModelBinders;
 using Contracts;
 using Entities.DTOs;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CompanyEmployee.Controllers
 {
@@ -58,6 +60,33 @@ namespace CompanyEmployee.Controllers
 
         }
 
+        [HttpGet("collection/({employeeIds})", Name = "GetEmployeesByIds")]
+        public IActionResult GetEmployeesById(
+            [ModelBinder(BinderType = typeof(IdsModelBinder))] IEnumerable<Guid> employeeIds, Guid companyId)
+        {
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, trackChanges: false);
+
+            if (company == null)
+            {
+                _logger.LogInfo($"Company with id: {companyId} doesn't exist in the database.");
+                return NotFound();
+            }
+
+            var ids = employeeIds as Guid[] ?? employeeIds.ToArray();
+
+            var employees = _repositoryManager.EmployeeRepository.GetEmployeesByIds(companyId, false, ids);
+
+            if (ids.Length != employees.Count())
+            {
+                _logger.LogInfo("Some of the employee ids are invalid");
+                return NotFound();
+            }
+
+            var employeesToReturn = _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+
+            return Ok(employeesToReturn);
+        }
+
         [HttpPost]
         public IActionResult CreateEmployeeForCompany(Guid companyId, [FromBody] EmployeeForCreationDto employee)
         {
@@ -83,5 +112,39 @@ namespace CompanyEmployee.Controllers
             return CreatedAtRoute("GetEmployeeForCompany", new { companyId, employeeId = employeeToReturn.Id },
                 employeeToReturn);
         }
+
+        [HttpPost("collection")]
+        public IActionResult CreateCollectionOfEmployeesForCompany(Guid companyId,
+           [FromBody] IEnumerable<EmployeeForCreationDto> employeeForCreationDtos)
+        {
+            if (!employeeForCreationDtos.Any())
+            {
+                _logger.LogError("the employee collection provided is either empty or null");
+                return BadRequest("the employee collection provided is either empty or null");
+            }
+
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, false);
+            if (company == null)
+            {
+                _logger.LogError($"The company with the id {companyId} does not exist");
+                return NotFound($"The company with the id {companyId} does not exist");
+            }
+
+            var employeesToBeCreated = _mapper.Map<IEnumerable<Employee>>(employeeForCreationDtos);
+
+            foreach (var employee in employeesToBeCreated)
+                _repositoryManager.EmployeeRepository.CreateEmployeeForCompany(companyId, employee);
+
+            _repositoryManager.SaveChanges();
+
+            var employeesToReturn = _mapper.Map<IEnumerable<EmployeeDto>>(employeesToBeCreated);
+
+            var employeeIds = string.Join(",", employeesToReturn.Select(e => e.Id));
+
+            return CreatedAtRoute("GetEmployeesByIds",
+                new {companyId, employeeIds}, employeesToReturn);
+        }
+
+        
     }
 }
