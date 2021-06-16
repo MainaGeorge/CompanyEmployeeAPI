@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NLog;
 using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyEmployee
 {
@@ -30,19 +31,19 @@ namespace CompanyEmployee
                     conf.RespectBrowserAcceptHeader = true;
                     conf.ReturnHttpNotAcceptable = true;
                 })
+                .AddNewtonsoftJson()
                 .AddXmlDataContractSerializerFormatters()
                 .AddCustomCsvFormatter();
 
             services.ConfigureIisIntegration();
-
             services.ConfigureCors();
-
             services.AddLoggingServices();
-
             services.AddSqlConnection(Configuration);
-
             services.ConfigureRepositoryManager();
-
+            services.Configure<ApiBehaviorOptions>(opt =>
+            {
+                opt.SuppressModelStateInvalidFilter = true;
+            });
             services.AddAutoMapper(typeof(Startup));
         }
 
