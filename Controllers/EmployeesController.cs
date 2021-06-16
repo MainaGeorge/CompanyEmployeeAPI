@@ -145,6 +145,29 @@ namespace CompanyEmployee.Controllers
                 new {companyId, employeeIds}, employeesToReturn);
         }
 
-        
+        [HttpDelete("{employeeId:guid}")]
+        public IActionResult DeleteEmployee(Guid companyId, Guid employeeId)
+        {
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, false);
+            if (company == null)
+            {
+                _logger.LogError($"the company with id {companyId} does not exist in the database");
+                return NotFound($"the company with the id {companyId} does not exist");
+            }
+
+            var employeeToDelete = _repositoryManager.EmployeeRepository
+                .GetEmployee(companyId, employeeId, false);
+
+            if (employeeToDelete == null)
+            {
+                _logger.LogError($"The employee with the id {employeeId} does not exist");
+                return NotFound($"the employee with the {employeeId} does not exist");
+            }
+
+            _repositoryManager.EmployeeRepository.DeleteEmployeeFromCompany(employeeToDelete);
+            _repositoryManager.SaveChanges();
+
+            return NoContent();
+        }
     }
 }
