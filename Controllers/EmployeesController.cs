@@ -142,7 +142,7 @@ namespace CompanyEmployee.Controllers
             var employeeIds = string.Join(",", employeesToReturn.Select(e => e.Id));
 
             return CreatedAtRoute("GetEmployeesByIds",
-                new {companyId, employeeIds}, employeesToReturn);
+                new { companyId, employeeIds }, employeesToReturn);
         }
 
         [HttpDelete("{employeeId:guid}")]
@@ -165,6 +165,38 @@ namespace CompanyEmployee.Controllers
             }
 
             _repositoryManager.EmployeeRepository.DeleteEmployeeFromCompany(employeeToDelete);
+            _repositoryManager.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpPut("{employeeId:guid}")]
+        public IActionResult UpdateEmployee(Guid employeeId,
+            Guid companyId, [FromBody] EmployeeForUpdatingDto employeeForUpdatingDto)
+        {
+            if (employeeForUpdatingDto == null)
+            {
+                _logger.LogError("EmployeeForUpdateDto object sent from client is null.");
+                return BadRequest("EmployeeForUpdateDto object is null");
+            }
+
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, false);
+
+            if (company == null)
+            {
+                _logger.LogError($"company with id {companyId} does not exist in the database");
+                return NotFound($"the company with the id {companyId} does not exist in the database");
+            }
+
+            var employeeToUpdate = _repositoryManager.EmployeeRepository.GetEmployee(companyId, employeeId, true);
+
+            if (employeeToUpdate == null)
+            {
+                _logger.LogInfo($"employee with id {employeeId} does not exist");
+                return NotFound();
+            }
+
+            _mapper.Map(employeeForUpdatingDto, employeeToUpdate);
             _repositoryManager.SaveChanges();
 
             return NoContent();

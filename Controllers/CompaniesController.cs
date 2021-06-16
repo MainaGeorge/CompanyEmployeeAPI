@@ -125,5 +125,27 @@ namespace CompanyEmployee.Controllers
             return NoContent();
         }
 
+        [HttpPut("{companyId:guid}")]
+        public IActionResult UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdateDto)
+        {
+            if (companyForUpdateDto == null)
+            {
+                _loggerManager.LogError("CompanyForUpdateDto object sent from client is null.");
+                return BadRequest("CompanyForUpdateDto object is null");
+            }
+            var company = _repositoryManager.CompanyRepository.GetCompany(companyId, true);
+
+            if (company == null)
+            {
+                _loggerManager.LogInfo($"Company with id: {companyId} doesn't exist in the database.");
+                return NotFound();
+            }
+
+            _mapper.Map(companyForUpdateDto, company);
+            _repositoryManager.SaveChanges();
+
+            return NoContent();
+        }
+
     }
 }
