@@ -38,14 +38,12 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpGet("{companyId:guid}", Name = "CompanyById")]
-        public async Task<IActionResult> GetCompany(Guid companyId)
+        [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
+        public IActionResult GetCompany(Guid companyId)
         {
-            var company = await _repositoryManager.CompanyRepository.GetCompany(companyId, false);
-            if (company != null) return Ok(_mapper.Map<CompanyDto>(company));
+            var company = HttpContext.Items["company"] as Company;
 
-            _loggerManager.LogInfo($"company with id {companyId} does not exist in the database");
-            return NotFound();
-
+            return Ok(_mapper.Map<CompanyDto>(company));
         }
 
         [HttpGet("collection/({ids})", Name = "CompanyCollection")]
@@ -112,7 +110,6 @@ namespace CompanyEmployee.Controllers
 
         [HttpDelete("{companyId:guid}")]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
-        
         public async Task<IActionResult> DeleteCompany(Guid companyId)
         {
             var company = HttpContext.Items["company"] as Company;

@@ -58,6 +58,7 @@ namespace CompanyEmployee.Extensions
         {
             services.AddScoped<ValidationFilterAttribute>();
             services.AddScoped<ValidateCompanyExistsAttribute>();
+            services.AddScoped<ValidateEmployeeExistsAttribute>();
         }
     }
 }
