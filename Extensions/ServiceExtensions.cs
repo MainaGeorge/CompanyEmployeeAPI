@@ -1,4 +1,5 @@
-﻿using Contracts;
+﻿using CompanyEmployee.Filters.ActionFilters;
+using Contracts;
 using Entities;
 using LoggerService;
 using Microsoft.AspNetCore.Builder;
@@ -53,5 +54,10 @@ namespace CompanyEmployee.Extensions
             builder.AddMvcOptions(config => config.OutputFormatters.Add(new CsvOutputFormatter()));
 
 
+        public static void RegisterActionFilters(this IServiceCollection services)
+        {
+            services.AddScoped<ValidationFilterAttribute>();
+            services.AddScoped<ValidateCompanyExistsAttribute>();
+        }
     }
 }

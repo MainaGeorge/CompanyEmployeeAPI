@@ -45,6 +45,7 @@ namespace CompanyEmployee
                 opt.SuppressModelStateInvalidFilter = true;
             });
             services.AddAutoMapper(typeof(Startup));
+            services.RegisterActionFilters();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

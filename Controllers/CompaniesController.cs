@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CompanyEmployee.Filters.ActionFilters;
 
 namespace CompanyEmployee.Controllers
 {
@@ -72,14 +73,9 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPost]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto companyForCreationDto)
         {
-            if (companyForCreationDto == null)
-            {
-                _loggerManager.LogError("The company object provided is null");
-                return BadRequest("The company dto provided is null");
-            }
-
             var companyEntity = _mapper.Map<Company>(companyForCreationDto);
             _repositoryManager.CompanyRepository.CreateCompany(companyEntity);
             await _repositoryManager.SaveChanges();
@@ -100,7 +96,12 @@ namespace CompanyEmployee.Controllers
 
             var companyEntities = _mapper.Map<IEnumerable<Company>>(companies);
             foreach (var company in companyEntities)
+            {
+                TryValidateModel(company);
+                if (!ModelState.IsValid)
+                    return UnprocessableEntity(ModelState);
                 _repositoryManager.CompanyRepository.CreateCompany(company);
+            }
             await _repositoryManager.SaveChanges();
 
             var companiesToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companyEntities);
@@ -110,16 +111,11 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpDelete("{companyId:guid}")]
+        [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
+        
         public async Task<IActionResult> DeleteCompany(Guid companyId)
         {
-            var company = await _repositoryManager.CompanyRepository.GetCompany(companyId, false);
-
-            if (company == null)
-            {
-                _loggerManager.LogError($"company to be deleted with id {companyId} does not exist");
-                return NotFound($"company to be deleted with id {companyId} does not exist");
-            }
-
+            var company = HttpContext.Items["company"] as Company;
             _repositoryManager.CompanyRepository.DeleteCompany(company);
             await _repositoryManager.SaveChanges();
 
@@ -127,21 +123,10 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPut("{companyId:guid}")]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdateDto)
         {
-            if (companyForUpdateDto == null)
-            {
-                _loggerManager.LogError("CompanyForUpdateDto object sent from client is null.");
-                return BadRequest("CompanyForUpdateDto object is null");
-            }
-            var company = await _repositoryManager.CompanyRepository.GetCompany(companyId, true);
-
-            if (company == null)
-            {
-                _loggerManager.LogInfo($"Company with id: {companyId} doesn't exist in the database.");
-                return NotFound();
-            }
-
+            var company = HttpContext.Items["company"] as Company;
             _mapper.Map(companyForUpdateDto, company);
             await _repositoryManager.SaveChanges();
 
