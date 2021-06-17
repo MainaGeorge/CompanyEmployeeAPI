@@ -46,6 +46,7 @@ namespace CompanyEmployee
             });
             services.AddAutoMapper(typeof(Startup));
             services.RegisterActionFilters();
+            services.RegisterDataShapers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

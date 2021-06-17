@@ -1,12 +1,14 @@
 ﻿using CompanyEmployee.Filters.ActionFilters;
 using Contracts;
 using Entities;
+using Entities.DTOs;
 using LoggerService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
+using Repository.DataShaping;
 
 namespace CompanyEmployee.Extensions
 {
@@ -59,6 +61,11 @@ namespace CompanyEmployee.Extensions
             services.AddScoped<ValidationFilterAttribute>();
             services.AddScoped<ValidateCompanyExistsAttribute>();
             services.AddScoped<ValidateEmployeeExistsAttribute>();
+        }
+
+        public static void RegisterDataShapers(this IServiceCollection services)
+        {
+            services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
         }
     }
 }
