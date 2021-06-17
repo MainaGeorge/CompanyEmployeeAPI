@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CompanyEmployee.Filters.ActionFilters;
+using Entities.RequestFeatures;
 using Microsoft.AspNetCore.JsonPatch;
+using Newtonsoft.Json;
 
 namespace CompanyEmployee.Controllers
 {
@@ -31,10 +33,13 @@ namespace CompanyEmployee.Controllers
 
         [HttpGet]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
-        public async Task<IActionResult> GetEmployees(Guid companyId)
+        public async Task<IActionResult> GetEmployees(Guid companyId,
+            [FromQuery]EmployeeRequestParameters requestParameters)
         {
             var companyEmployees = await _repositoryManager
-                .EmployeeRepository.GetEmployees(companyId, false);
+                .EmployeeRepository.GetEmployeesAsync(companyId, requestParameters, false);
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(companyEmployees.MetaData));
 
             return Ok(_mapper.Map<IEnumerable<EmployeeDto>>(companyEmployees));
         }
@@ -84,7 +89,6 @@ namespace CompanyEmployee.Controllers
 
         [HttpPost("collection")]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute), Order = 1)]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCollectionOfEmployeesForCompany(Guid companyId,
            [FromBody] IEnumerable<EmployeeForCreationDto> employeeForCreationDtos)
         {
