@@ -12,8 +12,10 @@ using CompanyEmployee.Filters.ActionFilters;
 
 namespace CompanyEmployee.Controllers
 {
+    [ApiVersion("1.0")]
     [Route("api/companies")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "120secondsProfile")]
     public class CompaniesController : ControllerBase
     {
         private readonly ILoggerManager _loggerManager;
@@ -28,6 +30,14 @@ namespace CompanyEmployee.Controllers
             _mapper = mapper;
         }
 
+        [HttpOptions]
+        public IActionResult GetCompaniesActions()
+        {
+            Response.Headers.Add("Allow", "GET, OPTIONS, POST");
+
+            return Ok();
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetCompanies()
         {
@@ -39,6 +49,7 @@ namespace CompanyEmployee.Controllers
 
         [HttpGet("{companyId:guid}", Name = "CompanyById")]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
+        [ResponseCache(Duration = 200)]
         public IActionResult GetCompany(Guid companyId)
         {
             var company = HttpContext.Items["company"] as Company;

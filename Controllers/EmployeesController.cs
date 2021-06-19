@@ -15,8 +15,10 @@ using Newtonsoft.Json;
 
 namespace CompanyEmployee.Controllers
 {
+    [ApiVersion("1.0")]
     [Route("/api/companies/{companyId:guid}/employees")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "120secondsProfile")]
     public class EmployeesController : ControllerBase
     {
         private readonly ILoggerManager _logger;
@@ -34,6 +36,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpGet]
+        [HttpHead]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
         public async Task<IActionResult> GetEmployees(Guid companyId,
             [FromQuery]EmployeeRequestParameters requestParameters)
@@ -51,6 +54,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpGet("{employeeId:guid}", Name = "GetEmployeeForCompany")]
+        [ResponseCache(Duration = 80)]
         [ServiceFilter(typeof(ValidateEmployeeExistsAttribute))]
         public IActionResult GetEmployee(Guid companyId, Guid employeeId)
         {

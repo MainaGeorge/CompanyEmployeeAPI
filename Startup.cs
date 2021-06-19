@@ -30,6 +30,11 @@ namespace CompanyEmployee
                 {
                     conf.RespectBrowserAcceptHeader = true;
                     conf.ReturnHttpNotAcceptable = true;
+                    conf.CacheProfiles.Add("120secondsProfile", new CacheProfile()
+                    {
+                        Duration = 120,
+                        Location = ResponseCacheLocation.Client
+                    });
                 })
                 .AddNewtonsoftJson()
                 .AddXmlDataContractSerializerFormatters()
@@ -47,6 +52,12 @@ namespace CompanyEmployee
             services.AddAutoMapper(typeof(Startup));
             services.RegisterActionFilters();
             services.RegisterDataShapers();
+            services.ConfigureVersioning();
+            services.ConfigureResponseCaching();
+            services.ConfigureHttpCacheHeaders();
+            services.ConfigureIdentity();
+            services.AddAuthentication();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,7 +82,13 @@ namespace CompanyEmployee
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.All });
 
+            app.UseResponseCaching();
+
+            app.UseHttpCacheHeaders();
+
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

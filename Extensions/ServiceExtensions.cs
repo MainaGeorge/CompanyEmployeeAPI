@@ -2,8 +2,13 @@
 using Contracts;
 using Entities;
 using Entities.DTOs;
+using Entities.Models;
 using LoggerService;
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,10 +34,7 @@ namespace CompanyEmployee.Extensions
 
         public static void ConfigureIisIntegration(this IServiceCollection services)
         {
-            services.Configure<IISOptions>(opt =>
-            {
-
-            });
+            services.Configure<IISOptions>(opt => { });
         }
 
         public static void AddLoggingServices(this IServiceCollection services) =>
@@ -66,6 +68,49 @@ namespace CompanyEmployee.Extensions
         public static void RegisterDataShapers(this IServiceCollection services)
         {
             services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
+        }
+
+        public static void ConfigureVersioning(this IServiceCollection services)
+        {
+            services.AddApiVersioning(config =>
+            {
+                config.ReportApiVersions = true;
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.ApiVersionReader = new HeaderApiVersionReader("api-version");
+            });
+        }
+
+        public static void ConfigureResponseCaching(this IServiceCollection services)
+        {
+            services.AddResponseCaching();
+        }
+
+        public static void ConfigureHttpCacheHeaders(this IServiceCollection services)
+            => services.AddHttpCacheHeaders((expirationOpt) =>
+            {
+                expirationOpt.MaxAge = 65;
+                expirationOpt.CacheLocation = CacheLocation.Private;
+            }, (validationOpt) =>
+            {
+                validationOpt.MustRevalidate = true;
+            });
+
+        public static void ConfigureIdentity(this IServiceCollection services)
+        {
+            var builder = services.AddIdentityCore<User>(userConfig =>
+            {
+                userConfig.Password.RequireDigit = true; 
+                userConfig.Password.RequireLowercase = false; 
+                userConfig.Password.RequireUppercase = false; 
+                userConfig.Password.RequireNonAlphanumeric = false; 
+                userConfig.Password.RequiredLength = 10; 
+                userConfig.User.RequireUniqueEmail = true;
+            });
+
+            builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services); 
+            builder.AddEntityFrameworkStores<RepositoryContext>()
+                .AddDefaultTokenProviders();
         }
     }
 }
