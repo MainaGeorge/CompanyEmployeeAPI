@@ -31,5 +31,15 @@ namespace CompanyEmployee.Extensions
                 });
             });
         }
+
+        public static void ConfigureSwagger(this IApplicationBuilder app)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(s =>
+            {
+                s.SwaggerEndpoint("/swagger/v1/swagger.json", "Learning API");
+                s.SwaggerEndpoint("/swagger/v2/swagger.json", "Soon to be Implemented");
+            });
+        }
     }
 }

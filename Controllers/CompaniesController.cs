@@ -15,6 +15,7 @@ namespace CompanyEmployee.Controllers
 {
     [ApiVersion("1.0")]
     [Route("api/companies")]
+    [ApiExplorerSettings(GroupName = "v1")]
     [ApiController]
     [ResponseCache(CacheProfileName = "120secondsProfile")]
     [Authorize]

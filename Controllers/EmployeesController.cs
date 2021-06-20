@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 namespace CompanyEmployee.Controllers
 {
     [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("/api/companies/{companyId:guid}/employees")]
     [ApiController]
     [ResponseCache(CacheProfileName = "120secondsProfile")]

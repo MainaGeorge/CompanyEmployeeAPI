@@ -60,6 +60,7 @@ namespace CompanyEmployee
             services.ConfigureJwt(Configuration);
             services.AddAuthentication();
             services.AddScoped<IAuthenticationManager, AuthenticationManager>();
+            services.ConfigureSwagger();
 
         }
 
@@ -94,6 +95,8 @@ namespace CompanyEmployee
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.ConfigureSwagger();
 
             app.UseEndpoints(endpoints =>
             {

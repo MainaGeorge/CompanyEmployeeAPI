@@ -1,6 +1,4 @@
-﻿using System;
-using System.Security.Permissions;
-using System.Text;
+﻿using System.Text;
 using CompanyEmployee.Filters.ActionFilters;
 using Contracts;
 using Entities;
@@ -17,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Repository;
 using Repository.DataShaping;
 
@@ -141,6 +140,15 @@ namespace CompanyEmployee.Extensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey.Value))
                 };
 
+            });
+        }
+
+        public static void ConfigureSwagger(this IServiceCollection service)
+        {
+            service.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo {Title = "Learning API", Version = "v1"});
+                c.SwaggerDoc("v2", new OpenApiInfo {Title = "Soon to be Implemented", Version = "v2"});
             });
         }
     }
