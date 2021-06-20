@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CompanyEmployee.Filters.ActionFilters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CompanyEmployee.Controllers
 {
@@ -16,6 +17,7 @@ namespace CompanyEmployee.Controllers
     [Route("api/companies")]
     [ApiController]
     [ResponseCache(CacheProfileName = "120secondsProfile")]
+    [Authorize]
     public class CompaniesController : ControllerBase
     {
         private readonly ILoggerManager _loggerManager;
@@ -120,6 +122,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpDelete("{companyId:guid}")]
+        [Authorize(Roles = "Administrator")]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
         public async Task<IActionResult> DeleteCompany(Guid companyId)
         {
@@ -131,6 +134,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPut("{companyId:guid}")]
+        [Authorize(Roles = "Administrator")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdateDto)
         {

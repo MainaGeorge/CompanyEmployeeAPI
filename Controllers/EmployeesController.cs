@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CompanyEmployee.Filters.ActionFilters;
 using Entities.RequestFeatures;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Newtonsoft.Json;
 
@@ -19,6 +20,7 @@ namespace CompanyEmployee.Controllers
     [Route("/api/companies/{companyId:guid}/employees")]
     [ApiController]
     [ResponseCache(CacheProfileName = "120secondsProfile")]
+    [Authorize]
     public class EmployeesController : ControllerBase
     {
         private readonly ILoggerManager _logger;
@@ -128,6 +130,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpDelete("{employeeId:guid}")]
+        [Authorize(Roles = "Administrator")]
         [ServiceFilter(typeof(ValidateEmployeeExistsAttribute))]
         public async Task<IActionResult> DeleteEmployee(Guid companyId, Guid employeeId)
         {
@@ -140,6 +143,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPut("{employeeId:guid}")]
+        [Authorize(Roles = "Administrator")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         [ServiceFilter(typeof(ValidateEmployeeExistsAttribute))]
         public async Task<IActionResult> UpdateEmployee(Guid employeeId,
@@ -153,6 +157,7 @@ namespace CompanyEmployee.Controllers
         }
 
         [HttpPatch("{employeeId:guid}")]
+        [Authorize(Roles = "Administrator")]
         [ServiceFilter(typeof(ValidateEmployeeExistsAttribute))]
         public async Task<IActionResult> PartiallyUpdateEmployee(Guid companyId, Guid employeeId,
             [FromBody]JsonPatchDocument<EmployeeForUpdatingDto> patchDoc)

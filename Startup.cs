@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using NLog;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
+using Repository;
 
 namespace CompanyEmployee
 {
@@ -56,7 +57,9 @@ namespace CompanyEmployee
             services.ConfigureResponseCaching();
             services.ConfigureHttpCacheHeaders();
             services.ConfigureIdentity();
+            services.ConfigureJwt(Configuration);
             services.AddAuthentication();
+            services.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
         }
 
